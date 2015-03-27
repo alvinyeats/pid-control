@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define	 Max	10.0
+#define	 Min 	8.0
+
 struct pid_data
 {
 	float SetData;
@@ -29,6 +32,12 @@ void PID_init()
 
 float PID_realize(float desired)
 {
+	if(desired > Max)
+		desired = Max;
+	else if(desired < Min)
+		desired = Min;
+
+
 	pid.SetData     =  desired;
 	pid.err 	    =  pid.SetData - pid.ActualData;
 	pid.integral   +=  pid.err;
@@ -46,10 +55,11 @@ int main()
 	int count = 0;
 	while(count < 1000)
 	{
-		float real= PID_realize(200.0);
+		float real= PID_realize(2);
 		printf("%f\n",real);
 		count++;
 	}
 
 	return 0;
 }
+
