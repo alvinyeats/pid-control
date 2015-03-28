@@ -1,12 +1,12 @@
 **************************************************************
 *	pid-control       -Version 1.0.0
-
-*   by Alvin Yeats  <alvin_yeats@163.com>
-
 *
-
+*   by Alvin Yeats  <alvin_yeats@163.com>
+*
+*
+*
 *	This project is licensed under a GPLv3 License
-
+*
 **************************************************************
 
 This is my first open source project.
