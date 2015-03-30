@@ -17,8 +17,8 @@ struct pid_data
 	float ActualData;
 	float err;
 	float err_last;
-	float u_sum;
 	float integral;
+	float u_sum;
 }pid;
 
 void PID_init()
@@ -29,9 +29,9 @@ void PID_init()
 	pid.ActualData 	= 0.0;		
 	pid.err 		= 0.0;
 	pid.err_last 	= 0.0;
-	pid.u_sum		= 0.0;
 	pid.integral 	= 0.0;
-	
+	pid.u_sum		= 0.0;
+
 	printf("PID_init end\n");
 }
 
@@ -56,7 +56,7 @@ int main()
 	float real = 0;
 	while(count < 1000)
 	{
-		real= PID_realize(11.0);
+		real= PID_realize(23);
 		printf("%f\n",real);
 		count++;
 	}

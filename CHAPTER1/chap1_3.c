@@ -14,32 +14,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define	 Kp		0.8
-#define  Ki		0
-#define	 Kd		0
+#define	 Kp		0.2
+#define  Ki		0.05
+#define	 Kd		0.2
 
 //basic data of pid control 
 struct pid_data
 {
 	float SetPoint;		//Desired Value
 	float FeedBack;		//feedback value
-	float LastError;	//Error[-1]
-	float PreError;		//Error[-2]
+	float err;			
+	float err_last;
+	float integral;
 	float u_sum;
 };
 
 typedef struct pid_data		pid_t;
 
 //pid struct data init
-struct pid_data* pid_init(float SetPoint, float FeedBack, float LastError, float PreError, float u_sum)
+struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_last,float integral, float u_sum)
 {
 	struct pid_data* tset = malloc(sizeof(struct pid_data));
 
 	tset->SetPoint 	= SetPoint;
 	tset->FeedBack 	= FeedBack; 				
-	tset->LastError = LastError;		
-	tset->PreError 	= PreError;
-	tset->u_sum 	= u_sum;
+	tset->err 		= err;		
+	tset->err_last 	= err_last;
+	tset->integral 	= integral;
+	tset->u_sum		= u_sum;
 
 	return tset;
 }
@@ -47,22 +49,54 @@ struct pid_data* pid_init(float SetPoint, float FeedBack, float LastError, float
 //The Increment PID Control Algorithm
 float pid_calc(pid_t* pid)
 {
-	float Err;
-	pErr = pid->SetPoint - pid->FeedBack;
+	pid->err 		= pid->SetPoint - pid->FeedBack;
+	pid->integral  += pid->err;
 
-	float threshold = 20.0;//set the threshold value
-	
 	//judgment of Integral separation
-	if(abs(Err) <= threshold)
+	int Err  = pid->err;
+	float beta = 0;
+	
+	int M = 2;
+	if(M == 1)
 	{
-		u_sum = Kp*pErr + Ki*iErr + Kd*dErr;
-
-
+		if((abs(Err) >= 30) && (abs(Err) <= 40))
+			beta = 0.3;
+		else if((abs(Err) >= 20) && (abs(Err) <=30))
+			beta = 0.6;
+		else if((abs(Err) >= 10) && (abs(Err) <=20))
+			beta = 0.9;
+		else
+			beta = 1.0;
 	}
-	else
+	else if(M == 2)
 	{
-		u_sum = Kp*pErr + Kd*dErr;
-
+		beta = 1.0;
 	}
 
+	pid->u_sum = Kp*pid->err + Kd*(pid->err - pid->err_last) + beta*Ki*pid->integral;
+	pid->FeedBack = pid->u_sum*1.0;
+
+	return pid->FeedBack;
 }
+
+int main()
+{
+	printf("System test begin \n");
+
+	pid_t* tset;
+	int count = 0;
+	float real = 0;
+
+	tset = pid_init(10,0,0,0,0,0);
+
+	while(count < 1000)
+	{
+		real = pid_calc(tset);
+		printf("%f\n",real);
+		count++;
+	}
+
+	free(tset);
+	return 0;
+}
+
