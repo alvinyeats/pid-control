@@ -13,10 +13,6 @@
 #define  Ki		0.16
 #define	 Kd		0.1
 
-#define	 Max	10.0
-#define	 Min 	8.0
-
-
 //basic data of pid control 
 struct pid_data
 {
@@ -44,7 +40,7 @@ struct pid_data* pid_init(float SetPoint, float FeedBack, float LastError, float
 }
 
 
-//pid control function
+//Integral Separate PID Control Arithmetic
 float pid_calc(pid_t* pid)
 {
 	float iErr,pErr,dErr;
@@ -52,7 +48,7 @@ float pid_calc(pid_t* pid)
 	pErr = iErr - pid->PreError;					//Proportion of incremental error
 	dErr = iErr - 2*pid->LastError + pid->PreError;	//Differential incremental error
 	
-	pid->u_sum = Kp*pErr + Ki*iErr + Kd*dErr;			//Control increase quantity
+	pid->u_sum = Kp*pErr + Ki*iErr + Kd*dErr;		//Control increase quantity
 	
 	pid->PreError  = pid->LastError;
 	pid->LastError = iErr;
