@@ -1,5 +1,5 @@
 /***************************************
-*	The Increment PID Control Algorithm
+*	Integral Separate PID Control Arithmetic
 *	增量式PID控制算法
 *
 *	input:just for Step Signal
@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define	 Kp		0.1
-#define  Ki		0
-#define	 Kd		0
+#define	 Kp		0.36
+#define  Ki		0.16
+#define	 Kd		0.1
 
 #define	 Max	10.0
 #define	 Min 	8.0
@@ -53,11 +53,11 @@ float pid_calc(pid_t* pid)
 	dErr = iErr - 2*pid->LastError + pid->PreError;	//Differential incremental error
 	
 	pid->u_sum = Kp*pErr + Ki*iErr + Kd*dErr;			//Control increase quantity
-	pid->FeedBack = pid->u_sum*1.0;
-
+	
 	pid->PreError  = pid->LastError;
 	pid->LastError = iErr;
-
+	
+	pid->FeedBack += pid->u_sum*1.0;
 	return pid->FeedBack;
 }
 
@@ -66,16 +66,18 @@ int main()
 	printf("System test begin \n");
 
 	pid_t* tset;
-	tset = pid_init(1,0,0,0,0);
-
 	int count = 0;
 	float real = 0;
-	while(count < 10)
+
+	tset = pid_init(23,0,0,0,0);
+
+	while(count < 100)
 	{
 		real = pid_calc(tset);
 		printf("%f\n",real);
 		count++;
 	}
 
+	free(tset);
 	return 0;
 }
