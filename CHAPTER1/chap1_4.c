@@ -53,7 +53,6 @@ float pid_calc(pid_t* pid)
 	pid->err = pid->SetPoint - pid->FeedBack;
 	//pid->integral  += pid->err;
 
-	//judgment of Integral separation
 	float err   = pid->err;
 	float u_sum = pid->u_sum; 
 	int alpha = 0;
