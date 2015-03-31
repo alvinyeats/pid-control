@@ -1,12 +1,15 @@
 /****************************************************************************
-*	The integral saturation PID control algorithm
-*	抗积分饱和PID控制算法
+*	The gearshift integral PID control algorithm
+*	变速积分PID控制算法
 *
 *	基本思想：
-*		作为防止积分饱和的方法之一就是抗积分饱和法，该方法的思路是在
-*	计算u(k)时，首先判断上一时刻的控制量u(k-1)是否已超出限制范围：
-*		若u(k-1)>u_max,则只累加负偏差；若u(k-1)<u_max,则只累加正偏差。
-*	这种算法可以避免控制量长时间停留在饱和区。
+*		在普通的PID控制算法中，由于积分系数Ki是常数，所以在整个控制过程中，
+*	积分增量不变。而系统对积分项的要求是，系统偏差大时积分作用应减弱甚至全
+*	无，而在偏差小时则应加强。积分系数取大了会产生超调，甚至积分饱和，取小
+*	了又迟迟不能消除静差。因此，如何根据系统偏差大小改变积分的速度，对于提
+*	高系统品质是很重要的。变速积分PID可较好的解决这一问题。
+*		变速积分PID的基本思想是设法改变积分项的累加速度，使其与偏差大小相对
+*	应：偏差越大，积分越慢，反之则越快。
 *
 *	input:just for Step Signal
 *	目前只针对阶跃信号输入情况
@@ -15,9 +18,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define	 Kp		0.2
-#define  Ki		0.8
-#define	 Kd		0.0
+#define	 Kp		0.8
+#define  Ki		0.7
+#define	 Kd		0.05
 
 //basic data of pid control 
 struct pid_data
@@ -50,42 +53,31 @@ struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_l
 //The Increment PID Control Algorithm
 float pid_calc(pid_t* pid)
 {
-	pid->err = pid->SetPoint - pid->FeedBack;
-	//pid->integral  += pid->err;
+	pid->err 		= pid->SetPoint - pid->FeedBack;
+	pid->integral  += (pid->err + pid->err_last)/2;
 
 	//judgment of Integral separation
-	float err   = pid->err;
-	float u_sum = pid->u_sum; 
-	int alpha = 0;
+	float err  = pid->err;
 	
 	int M = 2;
-	int um = 6;
-	if(M == 1)
-	{	
-		if(u_sum > um)
-		{
-			if(err >= 0)
-				alpha = 0;
-			else
-				alpha = 1;
-		}
-		else if(u_sum <= -um)
-		{
-			if(err > 0)
-				alpha = 1;
-			else
-				alpha = 0;
-		}
-		else
-		{
-			alpha = 1;
-		}
-	}
-	else if(M==2)
-		alpha = 1;
+	int A = 0.4,B = 0.6;
+	float flag;
 
-	pid->integral  += alpha*pid->err;
-	pid->u_sum = Kp*pid->err + Kd*(pid->err - pid->err_last) + Ki*pid->integral;
+	if(M == 1)
+	{
+		if(abs(err) <= B)
+			flag = 1.0;
+		else if((abs(err) > B) && (abs(err) <= (A+B)))
+			flag = (A - abs(err) + B)/A;
+		else
+			flag = 0.0;
+	}
+	else if(M == 2)
+	{
+		flag = 1.0;
+	}
+
+	pid->u_sum = Kp*pid->err + Kd*(pid->err - pid->err_last) + flag*Ki*pid->integral;
 	pid->FeedBack = pid->u_sum*1.0;
 	pid->err_last = pid->err;
 
@@ -100,7 +92,7 @@ int main()
 	int count = 0;
 	float real = 0;
 
-	tset = pid_init(100,0,0,0,0,0);
+	tset = pid_init(35,0,0,0,0,0);
 
 	while(count < 100)
 	{

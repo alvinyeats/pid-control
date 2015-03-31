@@ -1,5 +1,5 @@
 /****************************************************************************
-*	The Increment PID Control Algorithm
+*	The increment PID control algorithm
 *	积分分离PID控制算法
 *
 *	积分分离的基本控制思路：
@@ -75,6 +75,7 @@ float pid_calc(pid_t* pid)
 
 	pid->u_sum = Kp*pid->err + Kd*(pid->err - pid->err_last) + beta*Ki*pid->integral;
 	pid->FeedBack = pid->u_sum*1.0;
+	pid->err_last = pid->err;
 
 	return pid->FeedBack;
 }

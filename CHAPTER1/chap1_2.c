@@ -1,5 +1,5 @@
 /***************************************
-*	Integral Separate PID Control Arithmetic
+*	The integral separate PID control arithmetic
 *	增量式PID控制算法
 *
 *	input:just for Step Signal

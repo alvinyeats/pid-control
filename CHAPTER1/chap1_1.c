@@ -1,5 +1,5 @@
 /***************************************
-*	The Positional PID Control Algorithm
+*	The positional PID control algorithm
 *	位置式PID控制
 *
 *	input:just for Step Signal
