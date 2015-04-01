@@ -6,60 +6,69 @@
 *	目前只针对阶跃信号输入情况
 ***************************************/
 #include <stdio.h>
+#include <stdlib.h>
 
-#define	 Kp		0.2
-#define  Ki		0.05
-#define	 Kd		0.2
+#define	 Kp		0.32
+#define  Ki		0.64
+#define	 Kd		0.04
 
 struct pid_data
 {
-	float SetData;
-	float ActualData;
+	float SetPoint;
+	float FeedBack;
 	float err;
 	float err_last;
 	float integral;
 	float u_sum;
-}pid;
+};
 
-void PID_init()
+typedef struct pid_data		pid_t;
+
+
+//pid struct data init
+struct pid_data* pid_init(float SetPoint,float FeedBack,
+						  float err, float err_last, float u_sum)
 {
-	printf("PID_init begin\n");
-	
-	pid.SetData 	= 0.0;				
-	pid.ActualData 	= 0.0;		
-	pid.err 		= 0.0;
-	pid.err_last 	= 0.0;
-	pid.integral 	= 0.0;
-	pid.u_sum		= 0.0;
+	struct pid_data* tset = malloc(sizeof(struct pid_data));
 
-	printf("PID_init end\n");
+	tset->SetPoint 	= SetPoint;
+	tset->FeedBack 	= FeedBack; 				
+	tset->err 		= err;		
+	tset->err_last 	= err_last;
+	tset->u_sum 	= u_sum;
+
+	return tset;
 }
 
-float PID_realize(float desired)
-{
-	pid.SetData     =  desired;
-	pid.err 	    =  pid.SetData - pid.ActualData;
-	pid.integral   +=  pid.err;
-	pid.u_sum      	=  Kp*pid.err + Ki*pid.integral + Kd*(pid.err - pid.err_last);
-	pid.err_last    =  pid.err;
-	pid.ActualData  =  pid.u_sum*1.0;
 
-	return pid.ActualData;
+float pid_calc(pid_t* pid)
+{
+	pid->err     	=  pid->SetPoint - pid->FeedBack;
+	pid->integral  +=  pid->err;
+	pid->u_sum	 	=  Kp*pid->err + Ki*pid->integral + Kd*(pid->err - pid->err_last);
+	pid->err_last   =  pid->err;
+	pid->FeedBack	=  pid->u_sum*1.0;
+
+	return pid->FeedBack;
 }
 
 int main()
 {
 	printf("System test begin \n");
 
-	PID_init();
+	pid_t* tset;
 	int count = 0;
 	float real = 0;
-	while(count < 1000)
+
+	tset = pid_init(89,0,0,0,0);
+
+	while(count < 100)
 	{
-		real= PID_realize(23);
+		real = pid_calc(tset);
 		printf("%f\n",real);
 		count++;
 	}
 
+	free(tset);
 	return 0;
 }

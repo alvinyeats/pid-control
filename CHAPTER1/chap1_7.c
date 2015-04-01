@@ -43,7 +43,7 @@ struct pid_data
 typedef struct pid_data		pid_t;
 
 //pid struct data init
-struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_last, float integral, float u_k)
+struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_last, float u_k)
 {
 	struct pid_data* tset = malloc(sizeof(struct pid_data));
 
@@ -51,7 +51,6 @@ struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_l
 	tset->FeedBack 	= FeedBack; 				
 	tset->err 		= err;		
 	tset->err_last 	= err_last;
-	tset->integral 	= integral;
 	tset->u_k		= u_k;
 
 	return tset;
@@ -64,6 +63,7 @@ float pid_calc(pid_t* pid)
 	float ud_1=0;
 	int M = 2;
 	
+	pid->integral += pid->err;
 	if(M == 1)
 	{
 		alfa = Tf/(ts+Tf);
@@ -71,7 +71,7 @@ float pid_calc(pid_t* pid)
 		ud_1 = ud_k;
 		pid->u_k = Kc*pid->err + ud_k + Ki*pid->integral;
 	}
-	else if(M==2)
+	else if(M == 2)
 	{
 		pid->u_k = Kc*pid->err + Kd*(pid->err - pid->err_last) + Ki*pid->integral;
 	}
