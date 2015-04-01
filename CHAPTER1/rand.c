@@ -10,7 +10,7 @@ int main()
 	int i=20;
 	while(i--)
 	{
-		random = (float)(rand()%100)/100;
+		random = (float)(rand()%1000)/1000;
 		D = 5.0*random;
 		printf("D=%f\n",D);
 	}
