@@ -63,8 +63,7 @@ float pid_calc(pid_t* pid)
 		filty = pid->FeedBack;
 	}
 
-	srand(time(NULL));
-	float random = (rand()%100)/100.0;
+	float random = (float)(rand()%100)/100.0;
 	float D = 5.0*random;
 	yyout = pid->FeedBack + D;
 
@@ -102,7 +101,7 @@ int main()
 	float real = 0;
 
 	tset = pid_init(35,0,0,0,0);
-
+	srand(time(NULL));
 	while(count < 100)
 	{
 		real = pid_calc(tset);
