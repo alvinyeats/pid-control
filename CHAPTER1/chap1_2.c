@@ -9,9 +9,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define	 Kp		0.36
-#define  Ki		0.16
-#define	 Kd		0.1
+#define	 Kp		0.3
+#define  Ki		0.60
+#define	 Kd		0.0375
 
 //basic data of pid control 
 struct pid_data
