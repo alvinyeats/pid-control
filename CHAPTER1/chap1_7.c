@@ -25,8 +25,8 @@
 #define  Tf 	180
 #define  TD 	140
 
-#define	 Kc		9
-#define  Ki		0.0055
+#define	 Kc		0.035
+#define  Ki		0.265
 #define	 Kd		(float)(Kc*TD)/ts
 
 //basic data of pid control 
@@ -63,6 +63,7 @@ float pid_calc(pid_t* pid)
 	float ud_1=0;
 	int M = 2;
 	
+	pid->err = pid->SetPoint - pid->FeedBack;
 	pid->integral += pid->err;
 	if(M == 1)
 	{
@@ -76,7 +77,7 @@ float pid_calc(pid_t* pid)
 		pid->u_k = Kc*pid->err + Kd*(pid->err - pid->err_last) + Ki*pid->integral;
 	}
 
-	pid->FeedBack += pid->u_k*1.0;
+	pid->FeedBack = pid->u_k*1.0;
 	pid->err_last = pid->err;
 
 	return pid->FeedBack;
@@ -90,9 +91,9 @@ int main()
 	int count = 0;
 	float real = 0;
 
-	tset = pid_init(35,0,0,0,0,0);
+	tset = pid_init(35,0,0,0,0);
 
-	while(count < 10)
+	while(count < 100)
 	{
 		real = pid_calc(tset);
 		printf("%f\n",real);
