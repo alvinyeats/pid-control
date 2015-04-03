@@ -1,11 +1,10 @@
 /************************************************************************************
-*	The PID control algorithm based on feedforward compensation
-*	基于前馈补偿的PID控制算法
+*	The step PID control algorithm
+*	步进式PID控制算法
 *
-*		在高精度伺服控制中，前馈控制可用来提高系统的跟踪性能。经典控制理论中的
-*	前馈控制设计是基于复合控制思想，当闭环系统为连续系统时，使前馈环节与闭环系
-*	统的传递函数之积为1，从而实现输出完全复现输入。作者利用前馈控制的思想，针对
-*	PID控制设计了前馈补偿，以提高系统的跟踪性能
+*		在阶跃响应较大时，很容易产生超调。采用不仅是积分分离PID控制，该方法不直接
+*	对阶跃信号进行响应，而是使输入指令信号一步一步地逼近所要求的阶跃信号，可使对象
+*	运行平稳，适用于高精度伺服系统的位置跟踪。
 *	
 *	input:just for Step Signal
 *	目前只针对阶跃信号输入情况
@@ -26,7 +25,6 @@ struct pid_data
 	float SetPoint;		//Desired Value
 	float FeedBack;		//feedback value
 	float err;			
-	float err_last;
 	float integral;
 	float u_k;
 };
@@ -34,14 +32,13 @@ struct pid_data
 typedef struct pid_data		pid_t;
 
 //pid struct data init
-struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_last, float u_k)
+struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float u_k)
 {
 	struct pid_data* tset = malloc(sizeof(struct pid_data));
 
 	tset->SetPoint 	= SetPoint;
 	tset->FeedBack 	= FeedBack; 				
 	tset->err 		= err;		
-	tset->err_last 	= err_last;
 	tset->u_k		= u_k;
 
 	return tset;
@@ -50,22 +47,37 @@ struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_l
 //The Increment PID Control Algorithm
 float pid_calc(pid_t* pid)
 {
-	pid->err = pid->SetPoint - pid->FeedBack;
-	pid->integral += pid->err;
-
-
-	//需引入前馈补偿量drin_k和ddrin_k
-	float up_k,uf_k;
-	up_k = Kp*pid->err + Ki*pid->integral + Kd*(pid->err - pid->err_last)/ts;
-	uf_k = (25/133)*drin_k + (1/133)*ddrin_k;
+	float rate = 0.25,
+		  rini = 0.0,
+		  rd   = 20;
 
 	int M=2;
 	if(M==1)
-		pid->u_k = up_k;
-	else if(M==2)
-		pid->u_k = up_k + uf_k;
+	{
+		rin_k = rd;
+		pid->err = pid->SetPoint - pid->FeedBack;
+	}
 
-	pid->err_last = pid->err;
+	if(M==2)
+	{
+		if(rini < (rd - 0.25))
+			rini = rini + k*ts*rate;
+		else if(rini > (rd + 0.25))
+			rini = rini - k*ts*rate;
+		else
+			rini = rd;
+
+		pid->SetPoint = rini;
+		pid->err = pid->SetPoint - pid->FeedBack;
+	}
+
+	//PID with I separation
+	if(abs(pid->err) <= 0.8)
+		pid->integral += ts*pid->err;
+	else
+		pid->integral = 0;
+
+	pid->u_k = Kp*pid->err + Ki*pid->integral;
 
 	return pid->u_k;
 }
@@ -78,7 +90,7 @@ int main()
 	int count = 0;
 	float real = 0;
 
-	tset = pid_init(35,0,0,0,0);
+	tset = pid_init(35,0,0,0);
 
 	while(count < 100)
 	{
