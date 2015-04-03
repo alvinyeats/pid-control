@@ -18,14 +18,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 
-
-//#define	 ts 	0.001
-
-#define	 Kp		1.6
+#define	 Kp		1.209
 #define  Ki		0
-#define	 Kd		0.0
+#define	 Kd		0.001
 
 //basic data of pid control 
 struct pid_data

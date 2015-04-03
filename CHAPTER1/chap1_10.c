@@ -1,13 +1,12 @@
 /************************************************************************************
-*	The derivative ahead PID control algorithm
-*	微分先行PID控制算法
+*	The PID control algorithm based on feedforward compensation
+*	基于前馈补偿的PID控制算法
 *
-*		取M=1，采用微分先行PID控制方法；
-*		取M=2，采用普通PID方法。
-*
-*		对于给定值rin(k)频繁升降的场合，引入微分先行后，可以避免给定值升降时
-*	所引起的系统振荡，明显地改善了系统的动态特性。
-*
+*		在高精度伺服控制中，前馈控制可用来提高系统的跟踪性能。经典控制理论中的
+*	前馈控制设计是基于复合控制思想，当闭环系统为连续系统时，使前馈环节与闭环系
+*	统的传递函数之积为1，从而实现输出完全复现输入。作者利用前馈控制的思想，针对
+*	PID控制设计了前馈补偿，以提高系统的跟踪性能
+*	
 *	input:just for Step Signal
 *	目前只针对阶跃信号输入情况
 ************************************************************************************/
@@ -15,13 +14,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define  gama 	0.50
-#define  Td 	Kd/Kp
-#define  Ti 	0.89
+#define  ts 	0.001
 
-#define	 Kp		0.63
-#define  Ki		0.252
-#define	 Kd		1.06
+#define	 Kp		80
+#define  Ki		20
+#define	 Kd		2.0
 
 //basic data of pid control 
 struct pid_data
@@ -53,35 +50,7 @@ struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float err_l
 //The Increment PID Control Algorithm
 float pid_calc(pid_t* pid)
 {
-	float c1,c2,c3;
-	float ud_k,ud_1 = 0;
-	c1 = gama*Td/(gama*Td + ts);
-	c2 = (Td + ts)/(gama*Td + ts);
-	c3 = Td/(gama*Td + ts); 
 
-	pid->err = pid->SetPoint - pid->FeedBack;
-	pid->integral += pid->err;
-	
-	float y_1 = 0;
-	int M = 2;
-
-	if(M == 1)
-	{
-		ud_k = c1*ud_1 + c2*pid->FeedBack - c3*y_1;
-		pid->u_k = Kp*pid->err + ud_k + Ki*pid->integral;
-	}
-	else if(M == 2)
-	{
-		pid->u_k = Kp*pid->err + Kd*(pid->err - pid->err_last)/ts + Ki*pid->integral;
-	}
-
-	pid->FeedBack = pid->u_k*1.0;
-	
-
-	y_1 = pid->FeedBack;
-	pid->err_last = pid->err;
-
-	return pid->FeedBack;
 }
 
 int main()
@@ -92,9 +61,9 @@ int main()
 	int count = 0;
 	float real = 0;
 
-	tset = pid_init(80,0,0,0,0);
+	tset = pid_init(35,0,0,0,0);
 
-	while(count < 1000)
+	while(count < 100)
 	{
 		real = pid_calc(tset);
 		printf("%f\n",real);

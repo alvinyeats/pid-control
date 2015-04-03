@@ -21,7 +21,6 @@
 
 #define	 Kp		1.00
 #define  Ki		0.08
-//#define	 Kd		0.00
 
 //basic data of pid control 
 struct pid_data
@@ -29,7 +28,6 @@ struct pid_data
 	float SetPoint;		//Desired Value
 	float FeedBack;		//feedback value
 	float err;			
-//	float err_last;
 	float integral;
 	float u_sum;
 };
@@ -44,7 +42,6 @@ struct pid_data* pid_init(float SetPoint, float FeedBack, float err, float integ
 	tset->SetPoint 	= SetPoint;
 	tset->FeedBack 	= FeedBack; 				
 	tset->err 		= err;		
-//	tset->err_last 	= err_last;
 	tset->integral 	= integral;
 	tset->u_sum		= u_sum;
 
@@ -73,12 +70,6 @@ float pid_calc(pid_t* pid)
 		err =  pid->SetPoint - filty;
 	}
 
-	/*if(M == 3)
-	{
-
-
-	}
-*/
 	//I separation
 	if(abs(err) <= 0.8)
 		pid->integral += err;
@@ -87,7 +78,6 @@ float pid_calc(pid_t* pid)
 
 	pid->u_sum = Kp*err + Ki*pid->integral;
 	pid->FeedBack += pid->u_sum*1.0;
-//	pid->err_last = pid->err;
 
 	return pid->FeedBack;
 }
