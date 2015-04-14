@@ -9,6 +9,8 @@
 *	
 *	input:just for Step Signal
 *	目前只针对阶跃信号输入情况
+*
+*	注：未完全整定，具体参数和计算方式请根据实际情况定义！
 ************************************************************************************/
 
 #include <stdio.h>
@@ -56,6 +58,9 @@ float pid_calc(pid_t* pid)
 
 	//需引入前馈补偿量drin_k和ddrin_k
 	float up_k,uf_k;
+	float drin_k  = 0.65,
+		  ddrin_k = 0.45;
+		  	 
 	up_k = Kp*pid->err + Ki*pid->integral + Kd*(pid->err - pid->err_last)/ts;
 	uf_k = (25/133)*drin_k + (1/133)*ddrin_k;
 

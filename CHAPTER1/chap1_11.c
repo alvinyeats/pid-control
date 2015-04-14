@@ -8,6 +8,8 @@
 *	
 *	input:just for Step Signal
 *	目前只针对阶跃信号输入情况
+*
+*	注：未完全整定，具体参数和计算方式请根据实际情况定义！
 ************************************************************************************/
 
 #include <stdio.h>
@@ -18,6 +20,8 @@
 #define	 Kp		80
 #define  Ki		20
 #define	 Kd		2.0
+
+int k = 0;//循环次数，全局变量
 
 //basic data of pid control 
 struct pid_data
@@ -54,7 +58,7 @@ float pid_calc(pid_t* pid)
 	int M=2;
 	if(M==1)
 	{
-		rin_k = rd;
+		pid->SetPoint = rd;
 		pid->err = pid->SetPoint - pid->FeedBack;
 	}
 
@@ -85,18 +89,15 @@ float pid_calc(pid_t* pid)
 int main()
 {
 	printf("System test begin \n");
-
 	pid_t* tset;
-	int count = 0;
 	float real = 0;
 
 	tset = pid_init(35,0,0,0);
-
-	while(count < 100)
+	while(k < 100)
 	{
 		real = pid_calc(tset);
 		printf("%f\n",real);
-		count++;
+		k++;
 	}
 
 	free(tset);
