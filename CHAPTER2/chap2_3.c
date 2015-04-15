@@ -57,9 +57,11 @@ float pid_calc(pid_t* pid)
 	int M=1;
 	if M==1
 	{
-		pid->u = (num_1*err + num_2*err_1 + num_3*err_2 + num_4*err_3
-				 -den_3*u_1 - den_4*u_2 - den_5*u_3 - den_6*u_4 - den_7*u_5)/den_2;
+		wkp = wkp + xiteP*u*x(1);		//P	
+		wkd = whi + xiteI*u*x(2);		//I
+		wkd = whd + xiteD*u*x(3);		//D
 	}
+	
 	else if (M == 2)
 	{
 		pid->integral += pid->err;
