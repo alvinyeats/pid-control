@@ -1,8 +1,7 @@
-pid-control  
+PID-Control  
 Edit by Alvin Yeats  <alvinyeats@gmail.com>  
 This project is licensed under a FreeBSD License  
 
-This is my first open source project.  
 In this project,you will learn more pid-control methods.  
 
 - 供您参考：[PID基本概念](basic_concept.md)
